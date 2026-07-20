@@ -1,149 +1,98 @@
-import {
-useState
-} from "react";
-
+import { useState } from "react";
 import "./JobForm.css";
 
+function JobForm({ onSubmit }) {
 
-function JobForm({onSubmit}){
+  const [job, setJob] = useState({
+    title: "",
+    company: "",
+    location: "",
+    salary: "",
+    type: "",
+    description: ""
+  });
 
+  function handleChange(e) {
+    setJob({
+      ...job,
+      [e.target.name]: e.target.value
+    });
+  }
 
-const [job,setJob]=useState({
+  async function submit(e) {
+    e.preventDefault();
 
-title:"",
-company:"",
-location:"",
-salary:"",
-type:"",
-description:""
+    try {
+      await onSubmit(job);
 
-});
+      setJob({
+        title: "",
+        company: "",
+        location: "",
+        salary: "",
+        type: "",
+        description: ""
+      });
 
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
+  return (
+    <form className="job-form" onSubmit={submit}>
 
-function handleChange(e){
+      <input
+        name="title"
+        placeholder="Job Title"
+        value={job.title}
+        onChange={handleChange}
+        required
+      />
 
+      <input
+        name="company"
+        placeholder="Company Name"
+        value={job.company}
+        onChange={handleChange}
+        required
+      />
 
-setJob({
+      <input
+        name="location"
+        placeholder="Location"
+        value={job.location}
+        onChange={handleChange}
+      />
 
-...job,
+      <input
+        name="salary"
+        placeholder="Salary"
+        value={job.salary}
+        onChange={handleChange}
+      />
 
-[e.target.name]:
-e.target.value
+      <input
+        name="type"
+        placeholder="Job Type"
+        value={job.type}
+        onChange={handleChange}
+      />
 
-});
+      <textarea
+        name="description"
+        placeholder="Job Description"
+        value={job.description}
+        onChange={handleChange}
+        required
+      />
 
+      <button type="submit">
+        Post Job
+      </button>
 
+    </form>
+  );
 }
-
-
-
-function submit(e){
-
-e.preventDefault();
-
-
-onSubmit(job);
-
-
-
-}
-
-
-
-return(
-
-<form
-className="job-form"
-onSubmit={submit}
->
-
-
-<input
-
-name="title"
-
-placeholder="Job Title"
-
-onChange={handleChange}
-
-/>
-
-
-
-<input
-
-name="company"
-
-placeholder="Company Name"
-
-onChange={handleChange}
-
-/>
-
-
-
-<input
-
-name="location"
-
-placeholder="Location"
-
-onChange={handleChange}
-
-/>
-
-
-
-<input
-
-name="salary"
-
-placeholder="Salary"
-
-onChange={handleChange}
-
-/>
-
-
-
-<input
-
-name="type"
-
-placeholder="Job Type"
-
-onChange={handleChange}
-
-/>
-
-
-
-<textarea
-
-name="description"
-
-placeholder="Job Description"
-
-onChange={handleChange}
-
-/>
-
-
-
-<button>
-
-Post Job
-
-</button>
-
-
-</form>
-
-);
-
-
-}
-
 
 export default JobForm;
