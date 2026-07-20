@@ -1,0 +1,246 @@
+const User = require("../models/User");
+const s3 = require("../config/s3");
+const { PutObjectCommand } = require("@aws-sdk/client-s3");
+
+
+// GET PROFILE
+exports.getProfile = async (req, res) => {
+  try {
+
+    const user = await User.findById(req.user.id)
+      .select("-password");
+
+    res.json(user);
+
+  } catch (err) {
+
+    res.status(500).json({
+      message: err.message
+    });
+
+  }
+};
+
+
+
+// UPDATE PROFILE
+exports.updateProfile = async (req, res) => {
+
+  try {
+
+    const user = await User.findById(req.user.id);
+
+    if(!user){
+      return res.status(404).json({
+        message:"User not found"
+      });
+    }
+
+
+    user.name = req.body.name || user.name;
+    user.skills = req.body.skills || user.skills;
+
+
+    await user.save();
+
+
+    res.json({
+      message:"Profile updated",
+      user
+    });
+
+
+  } catch(err){
+
+    res.status(500).json({
+      message:err.message
+    });
+
+  }
+
+};
+
+
+
+// UPLOAD RESUME
+exports.uploadResume = async(req,res)=>{
+
+try{
+
+
+if(!req.file){
+
+return res.status(400).json({
+message:"No file uploaded"
+});
+
+}
+
+
+
+const fileName =
+`${Date.now()}-${req.file.originalname}`;
+
+
+
+await s3.send(
+
+new PutObjectCommand({
+
+Bucket:process.env.AWS_BUCKET_NAME,
+
+Key:fileName,
+
+Body:req.file.buffer,
+
+ContentType:req.file.mimetype
+
+})
+
+);
+
+
+
+const url =
+`https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+
+
+const user =
+await User.findById(req.user.id);
+
+
+
+user.resume=url;
+
+
+await user.save();
+
+
+
+res.json({
+
+message:"Resume uploaded",
+
+url
+
+});
+
+
+
+}catch(err){
+
+res.status(500).json({
+message:err.message
+});
+
+}
+
+
+};
+
+
+
+// SAVE JOB
+
+exports.saveJob = async(req,res)=>{
+
+try{
+
+const user = await User.findById(req.user.id);
+
+
+if(!user.savedJobs.includes(req.params.id)){
+
+user.savedJobs.push(req.params.id);
+
+await user.save();
+
+}
+
+
+res.json({
+message:"Job saved"
+});
+
+
+}
+catch(err){
+
+res.status(500).json({
+message:err.message
+});
+
+}
+
+};
+
+
+
+// GET SAVED JOBS
+
+exports.getSavedJobs = async(req,res)=>{
+
+try{
+
+
+const user = await User.findById(req.user.id)
+.populate("savedJobs");
+
+
+res.json(user.savedJobs);
+
+
+}
+catch(err){
+
+res.status(500).json({
+message:err.message
+});
+
+}
+
+};
+
+
+
+// REMOVE SAVED JOB
+
+exports.removeSavedJob = async(req,res)=>{
+
+
+try{
+
+
+const user =
+await User.findById(req.user.id);
+
+
+user.savedJobs =
+user.savedJobs.filter(
+
+(job)=>
+job.toString() !== req.params.id
+
+);
+
+
+await user.save();
+
+
+res.json({
+message:"Job removed"
+});
+
+
+}
+catch(err){
+
+res.status(500).json({
+message:err.message
+});
+
+}
+
+
+};
