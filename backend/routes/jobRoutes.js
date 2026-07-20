@@ -8,7 +8,8 @@ createJob,
 getJobs,
 getJobById,
 deleteJob,
-updateJob
+updateJob,
+getEmployerJobs
 } = require("../controllers/jobController");
 
 // Public
@@ -20,5 +21,7 @@ router.post("/", auth, createJob);
 router.delete("/:id", auth, deleteJob);
 
 router.put("/:id",auth,updateJob);
+
+router.get("/employer/my-jobs", auth, getEmployerJobs);
 
 module.exports = router;
