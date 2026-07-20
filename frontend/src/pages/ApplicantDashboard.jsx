@@ -48,7 +48,11 @@ My Applications
 
 <br/><br/>
 
+<Link to="/saved-jobs">
+  <button>View Saved Jobs</button>
+</Link>
 
+<br/><br/>
 
 <Link to="/jobs">
 

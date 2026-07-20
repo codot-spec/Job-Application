@@ -74,7 +74,7 @@ job.title.toLowerCase()
 
 <JobCard
 
-key={job.id}
+key={job._id}
 
 job={job}
 

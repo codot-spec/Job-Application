@@ -37,7 +37,7 @@ return(
 
 
 
-<Link to={`/jobs/${job.id}`}>
+<Link to={`/jobs/${job._id}`}>
 
 <button>
 View Details
