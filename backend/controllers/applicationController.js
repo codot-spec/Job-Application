@@ -1,6 +1,8 @@
 const Application = require("../models/Application");
 const Job = require("../models/Job");
-
+const s3 = require("../config/s3");
+const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 exports.applyToJob = async (req, res) => {
   try {
@@ -12,9 +14,7 @@ exports.applyToJob = async (req, res) => {
     });
 
     if (alreadyApplied) {
-      return res.status(400).json({
-        message: "Already applied",
-      });
+      return res.status(400).json({ message: "Already applied" });
     }
 
     const application = await Application.create({
@@ -28,7 +28,6 @@ exports.applyToJob = async (req, res) => {
   }
 };
 
-
 exports.getMyApplications = async (req, res) => {
   try {
     const apps = await Application.find({
@@ -41,19 +40,33 @@ exports.getMyApplications = async (req, res) => {
   }
 };
 
-
 exports.getApplicantsForJob = async (req, res) => {
   try {
     const apps = await Application.find({
       job: req.params.jobId,
-    }).populate("applicant", "name email resume"); //  Added "resume" here
+    }).populate("applicant", "name email resume");
 
-    res.json(apps);
+    const updatedApps = await Promise.all(
+      apps.map(async (app) => {
+        const appObj = app.toObject();
+
+        if (appObj.applicant && appObj.applicant.resume) {
+          const command = new GetObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: appObj.applicant.resume,
+          });
+          appObj.applicant.resume = await getSignedUrl(s3, command, { expiresIn: 900 });
+        }
+
+        return appObj;
+      })
+    );
+
+    res.json(updatedApps);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 exports.updateStatus = async (req, res) => {
   try {
@@ -66,7 +79,6 @@ exports.updateStatus = async (req, res) => {
     }
 
     app.status = status;
-
     await app.save();
 
     res.json(app);
