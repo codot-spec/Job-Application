@@ -1,6 +1,6 @@
 const Job = require("../models/Job");
 
-// CREATE JOB (Employer only)
+
 exports.createJob = async (req, res) => {
   try {
     const job = await Job.create({
@@ -14,7 +14,7 @@ exports.createJob = async (req, res) => {
   }
 };
 
-// GET ALL JOBS
+
 exports.getJobs = async (req, res) => {
   try {
     const jobs = await Job.find().populate("createdBy", "company");
@@ -25,7 +25,7 @@ exports.getJobs = async (req, res) => {
   }
 };
 
-// GET SINGLE JOB
+
 exports.getJobById = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id).populate(
@@ -43,7 +43,7 @@ exports.getJobById = async (req, res) => {
   }
 };
 
-// DELETE JOB
+
 exports.deleteJob = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
@@ -52,7 +52,7 @@ exports.deleteJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    // Only creator can delete
+    
     if (job.createdBy.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized" });
     }
@@ -109,4 +109,13 @@ message:err.message
 
 }
 
+};
+
+exports.getEmployerJobs = async (req, res) => {
+  try {
+    const jobs = await Job.find({ createdBy: req.user.id });
+    res.json(jobs);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };

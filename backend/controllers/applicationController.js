@@ -1,7 +1,7 @@
 const Application = require("../models/Application");
 const Job = require("../models/Job");
 
-// APPLY TO JOB
+
 exports.applyToJob = async (req, res) => {
   try {
     const { jobId } = req.body;
@@ -28,7 +28,7 @@ exports.applyToJob = async (req, res) => {
   }
 };
 
-// GET MY APPLICATIONS (Applicant)
+
 exports.getMyApplications = async (req, res) => {
   try {
     const apps = await Application.find({
@@ -41,12 +41,12 @@ exports.getMyApplications = async (req, res) => {
   }
 };
 
-// GET APPLICANTS FOR A JOB (Employer)
+
 exports.getApplicantsForJob = async (req, res) => {
   try {
     const apps = await Application.find({
       job: req.params.jobId,
-    }).populate("applicant", "name email");
+    }).populate("applicant", "name email resume"); //  Added "resume" here
 
     res.json(apps);
   } catch (err) {
@@ -54,7 +54,7 @@ exports.getApplicantsForJob = async (req, res) => {
   }
 };
 
-// UPDATE STATUS (Employer)
+
 exports.updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
